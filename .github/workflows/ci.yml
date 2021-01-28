@@ -37,7 +37,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: "**/node_modules"
-          key: ${{ runner.os }}-cacheNodeModules10-${{ steps.nodeModulesCacheKey.outputs.value }}
+          key: ${{ github.event.inputs.cache-key }}
+#          key: ${{ runner.os }}-cacheNodeModules10-${{ steps.nodeModulesCacheKey.outputs.value }}
           restore-keys: ${{ runner.os }}-cacheNodeModules10-
       - name: Get yarn cache directory path
         id: yarnCacheDirPath
