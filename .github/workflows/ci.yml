@@ -36,7 +36,9 @@ jobs:
         id: cacheNodeModules
         uses: actions/cache@v2
         with:
-          path: "**/node_modules"
+          path: |
+            "**/node_modules"
+            node_modules
           key: ${{ github.event.inputs.cache-key }}
 #          key: ${{ runner.os }}-cacheNodeModules10-${{ steps.nodeModulesCacheKey.outputs.value }}
           restore-keys: ${{ runner.os }}-cacheNodeModules10-
