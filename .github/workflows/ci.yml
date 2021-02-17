@@ -62,8 +62,12 @@ jobs:
       - name: list files
         run: ls node_modules\
 
-#      - name: Compile and Download
-#        run: yarn npm-run-all --max_old_space_size=4095 -lp compile "electron x64" playwright-install download-builtin-extensions
+      - name: Compile and Download
+        run: yarn npm-run-all --max_old_space_size=4095 -lp compile "electron x64" playwright-install download-builtin-extensions
+
+      - name: Run Unit Tests (Electron)
+        id: electron-unit-tests
+        run: DISPLAY=:10 ./scripts/test.sh 
 
   windows-restorecache:
     needs: windows-savecache
