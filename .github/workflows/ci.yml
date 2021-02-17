@@ -63,6 +63,7 @@ jobs:
 #        run: yarn npm-run-all --max_old_space_size=4095 -lp compile "electron x64" playwright-install download-builtin-extensions
 
   windows-restorecache:
+    needs: windows-savecache
     name: Windows restore cache
     runs-on: windows-latest
     timeout-minutes: 30
