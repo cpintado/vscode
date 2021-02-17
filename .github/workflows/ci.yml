@@ -8,8 +8,8 @@ on:
 
 
 jobs:
-  windows:
-    name: Windows
+  windows-savecache:
+    name: Windows save cache
     runs-on: windows-latest
     timeout-minutes: 30
     env:
@@ -62,3 +62,56 @@ jobs:
 #      - name: Compile and Download
 #        run: yarn npm-run-all --max_old_space_size=4095 -lp compile "electron x64" playwright-install download-builtin-extensions
 
+  windows-restorecache:
+    name: Windows restore cache
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      CHILD_CONCURRENCY: "1"
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      # check out ref in which the issue was found
+      - uses: actions/checkout@v2
+        with:
+          ref: '5bcd2220750b9dd630e4701f1fea9ccc008b8b1e'
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "2.x"
+
+      - name: Compute node modules cache key
+        id: nodeModulesCacheKey
+        run: echo "::set-output name=value::$(node build/azure-pipelines/common/computeNodeModulesCacheKey.js)"
+      - name: Cache node modules
+        id: cacheNodeModules
+        uses: actions/cache@v2
+        with:
+          path: |
+            **/node_modules
+          key: ${{ github.event.inputs.cache-key }}
+#          key: ${{ runner.os }}-cacheNodeModules10-${{ steps.nodeModulesCacheKey.outputs.value }}
+          restore-keys: ${{ runner.os }}-cacheNodeModules10-
+      - name: Get yarn cache directory path
+        id: yarnCacheDirPath
+        if: ${{ steps.cacheNodeModules.outputs.cache-hit != 'true' }}
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: Cache yarn directory
+        if: ${{ steps.cacheNodeModules.outputs.cache-hit != 'true' }}
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarnCacheDirPath.outputs.dir }}
+          key: ${{ runner.os }}-yarnCacheDir-${{ steps.nodeModulesCacheKey.outputs.value }}
+          restore-keys: ${{ runner.os }}-yarnCacheDir-
+      - name: Execute yarn
+        if: ${{ steps.cacheNodeModules.outputs.cache-hit != 'true' }}
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+          ELECTRON_SKIP_BINARY_DOWNLOAD: 1
+        run: yarn --frozen-lockfile --network-timeout 180000
+
+#      - name: Compile and Download
+#        run: yarn npm-run-all --max_old_space_size=4095 -lp compile "electron x64" playwright-install download-builtin-extensions
